@@ -1,5 +1,5 @@
 # PythonPiDAQ
-Python on a Pi using MCC152 and MCC134 hats and Flask to return JSON data
+Python on a Pi using MCC152, MCC118 and MCC134 hats and Flask to return JSON data
 
 MCC152 requires IC2 be enabled on Pi
 
@@ -31,11 +31,11 @@ returns:
 ]
 **************************************************
 Set Digital Outputs
-http://10.111.3.40:5000/DigOutWri?id=7
+http://10.111.3.40:5000/DigOutWrite?id=7
 use decimal to send
-255 = all on
-0 = all odd
-7 = 00000111
+255 = all on:
+0 = all off:
+7 = 00000111:
 
 [
   {
