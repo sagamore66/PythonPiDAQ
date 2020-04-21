@@ -1,7 +1,7 @@
 from __future__ import print_function
 from time import sleep
 from sys import stdout
-from daqhats import mcc134, mcc152, HatIDs, HatError, TcTypes, hat_list, DIOConfigItem
+from daqhats import mcc134, mcc152, HatIDs, HatError, TcTypes, hat_list, DIOConfigItem, OptionFlags
 from daqhats_utils import select_hat_device, tc_type_to_string
 from flask import Flask, request, jsonify
 
@@ -177,6 +177,40 @@ def api_id():
         ]
 
     return jsonify(myDIO)
+
+
+@app.route('/AnalogOut0', methods=['GET'])
+def AnaOut0():
+
+    if 'id' in request.args:
+        id = float(request.args['id'])
+    else:
+        return "Error detected"
+    
+    options = OptionFlags.DEFAULT
+    boardAddr = select_hat_device(HatIDs.MCC_152) 
+    board = mcc152(boardAddr)
+    board.dio_reset()
+        
+    board.a_out_write(channel=0, value=id, options=options)
+    return "SUCCESS"
+
+@app.route('/AnalogOut1', methods=['GET'])
+def AnaOut1():
+
+    if 'id' in request.args:
+        id = float(request.args['id'])
+    else:
+        return "Error detected"
+    
+    options = OptionFlags.DEFAULT
+    boardAddr = select_hat_device(HatIDs.MCC_152) 
+    board = mcc152(boardAddr)
+    board.dio_reset()
+        
+    board.a_out_write(channel=1, value=id, options=options)
+    return "SUCCESS"
+
 
 
         
