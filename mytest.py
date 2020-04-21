@@ -38,98 +38,7 @@ def index():
     return jsonify(temps)
             
         
-@app.route('/MCC152')
-def index1():
-
-    #get MCC152 board address
-    boardAddr = select_hat_device(HatIDs.MCC_152) 
-    board = mcc152(boardAddr)
-
-
-    board.dio_reset()
-    PortRead = str(board.dio_input_read_port())
-        
-    myDIO = [
-        {'chan': 0,
-        'value': str(boardAddr),},
-        {'chan': 1,
-        'value': PortRead,},
-        {'chan': 2,
-        'value': 'tempTwo',},
-        {'chan': 3,
-        'value': 'tempThree',} 
-        ]
-   
-    return jsonify(myDIO)
-
-@app.route('/DigOut')
-def index2():
-
-    #get MCC152 board address
-    boardAddr = select_hat_device(HatIDs.MCC_152) 
-    board = mcc152(boardAddr)
-    channels = (0, 1, 2, 3, 4, 5, 6, 7,8)
-
-    board.dio_reset()
-    bit0 = str(board.dio_input_read_bit(0))
-    bit1 = str(board.dio_input_read_bit(1))
-    bit2 = str(board.dio_input_read_bit(2))
-    bit3 = str(board.dio_input_read_bit(3))
-    bit4 = str(board.dio_input_read_bit(4))
-    bit5 = str(board.dio_input_read_bit(5))
-    bit6 = str(board.dio_input_read_bit(6))
-    bit7 = str(board.dio_input_read_bit(7)) 
-    
-        
-    myDIO = [
-        {'chan': 0,
-        'value': bit0,},
-        {'chan': 1,
-        'value': bit1,},
-        {'chan': 2,
-        'value': bit2,},
-        {'chan': 3,
-        'value': bit3,} 
-        ]
-
-    return jsonify(myDIO)
-
-@app.route('/DigOutWrite')
-def index3():
-
-    #get MCC152 board address
-    boardAddr = select_hat_device(HatIDs.MCC_152) 
-    board = mcc152(boardAddr)
-    channels = (0, 1, 2, 3, 4, 5, 6, 7, 8)
-    board.dio_reset()
-
-    board.dio_config_write_port(DIOConfigItem.DIRECTION, 0x00)
-
-    board.dio_output_write_port(0b00000010)
-
-    bit0 = str(board.dio_input_read_bit(0))
-    bit1 = str(board.dio_input_read_bit(1))
-    bit2 = str(board.dio_input_read_bit(2))
-    bit3 = str(board.dio_input_read_bit(3))
-    bit4 = str(board.dio_input_read_bit(4))
-    bit5 = str(board.dio_input_read_bit(5))
-    bit6 = str(board.dio_input_read_bit(6))
-    bit7 = str(board.dio_input_read_bit(7))    
-        
-    myDIO = [
-        {'chan': 0,
-        'value': bit0,},
-        {'chan': 1,
-        'value': bit1,},
-        {'chan': 2,
-        'value': bit2,},
-        {'chan': 3,
-        'value': bit3,} 
-        ]
-
-    return jsonify(myDIO)
-
-@app.route('/DigOutWri', methods=['GET'])
+@app.route('/DigOutWrite', methods=['GET'])
 def api_id():
 
     
@@ -141,7 +50,7 @@ def api_id():
     #get MCC152 board address
     boardAddr = select_hat_device(HatIDs.MCC_152) 
     board = mcc152(boardAddr)
-    channels = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+    bit = (0, 1, 2, 3, 4, 5, 6, 7, 8)
     board.dio_reset()
 
     board.dio_config_write_port(DIOConfigItem.DIRECTION, 0x00)
@@ -158,21 +67,21 @@ def api_id():
     bit7 = str(board.dio_input_read_bit(7))    
         
     myDIO = [
-        {'chan': 0,
+        {'bit': 0,
         'value': bit0,},
-        {'chan': 1,
+        {'bit': 1,
         'value': bit1,},
-        {'chan': 2,
+        {'bit': 2,
         'value': bit2,},
-        {'chan': 3,
+        {'bit': 3,
         'value': bit3,},
-        {'chan': 4,
+        {'bit': 4,
         'value': bit4,},
-        {'chan': 5,
+        {'bit': 5,
         'value': bit5,},
-        {'chan': 6,
+        {'bit': 6,
         'value': bit7,},
-        {'chan': 7,
+        {'bit': 7,
         'value': bit7,} 
         ]
 
@@ -209,9 +118,9 @@ def AnaOut1():
     board.dio_reset()
         
     board.a_out_write(channel=1, value=id, options=options)
-    return "SUCCESS"
+    return jsonify("SUCCESS"
 
-
+)
 
         
 if __name__ == '__main__':
