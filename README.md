@@ -80,3 +80,10 @@ Analog0?id=3.3 will send 3.3 to Analog Output 0
 Analog1?id=1.69 will send 1.69 volts to Analog Output 1
 
 SUCCESS will be returned if everythinhg is OK
+
+**************************************************
+Analog Input (8 Chan - 0 to 7)
+http://10.111.3.40:5000/AnalogInChan?id=0
+AnalogInChan?id=0 returns the voltage at chan 0:
+[{"chan":0,"value":4.692157421477653}]
+
