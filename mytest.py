@@ -1,12 +1,15 @@
+#!/usr/bin/env python
+#  -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from time import sleep
 from sys import stdout
-from daqhats import mcc134, mcc152, HatIDs, HatError, TcTypes, hat_list, DIOConfigItem, OptionFlags
-from daqhats_utils import select_hat_device, tc_type_to_string
+from daqhats import mcc134, mcc152, mcc118, HatIDs, HatError, TcTypes, hat_list, DIOConfigItem, OptionFlags
+from daqhats_utils import select_hat_device, tc_type_to_string, enum_mask_to_string
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 
 @app.route('/TCtemps')
 def index():
@@ -118,9 +121,31 @@ def AnaOut1():
     board.dio_reset()
         
     board.a_out_write(channel=1, value=id, options=options)
-    return jsonify("SUCCESS"
+    return jsonify("SUCCESS")
 
-)
+
+@app.route('/AnalogInChan', methods=['GET'])
+def AnaIN():
+
+    if 'id' in request.args:
+        id = int(request.args['id'])
+    else:
+        return "Error detected"
+        
+    options = OptionFlags.DEFAULT
+    boardAddr = select_hat_device(HatIDs.MCC_118) 
+    board = mcc118(boardAddr)
+    
+    value = board.a_in_read(id, options)
+    
+    myAnalogIn = [
+        {'chan': id,
+        'value': value,}
+        ]
+
+    
+    return jsonify(myAnalogIn)
+
 
         
 if __name__ == '__main__':
