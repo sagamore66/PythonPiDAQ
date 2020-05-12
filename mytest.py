@@ -137,16 +137,17 @@ def AnaIN():
     board = mcc118(boardAddr)
     
     value = board.a_in_read(id, options)
+    #value = value * 2
+    #value = "{:.2f}".format(value)    
     
     myAnalogIn = [
         {'chan': id,
         'value': value,}
         ]
 
-    
     return jsonify(myAnalogIn)
 
 
         
-if __name__ == '__main__':
+if __name__ == '__main__':  
     app.run(host="10.111.3.40", port="5000")
