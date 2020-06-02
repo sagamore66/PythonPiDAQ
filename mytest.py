@@ -3,16 +3,20 @@
 
 from __future__ import print_function
 from time import sleep
-from sys import stdout
+from sys import stdout, version_info
 from daqhats import mcc134, mcc152, mcc118, HatIDs, HatError, TcTypes, hat_list, DIOConfigItem, OptionFlags, \
     interrupt_callback_enable, HatCallback, interrupt_callback_disable
 from daqhats_utils import select_hat_device, tc_type_to_string, enum_mask_to_string
 from flask import Flask, request, jsonify
 
+# Use a global variable for our board object so it is accessible from the
+# interrupt callback
+global HAT
 HAT = None
 
 app = Flask(__name__)
 app.config["DEBUG"] = False
+
 
 @app.route('/TCtemps')
 def index():
@@ -62,8 +66,7 @@ def api_id():
     boardAddr = select_hat_device(HatIDs.MCC_152) 
     board = mcc152(boardAddr)
     bit = (0, 1, 2, 3, 4, 5, 6, 7, 8)
-    board.dio_reset()
-
+    
     board.dio_config_write_port(DIOConfigItem.DIRECTION, 0x00)
    
     board.dio_output_write_port(id)
@@ -110,8 +113,7 @@ def AnaOut0():
     options = OptionFlags.DEFAULT
     boardAddr = select_hat_device(HatIDs.MCC_152) 
     board = mcc152(boardAddr)
-    board.dio_reset()
-        
+            
     board.a_out_write(channel=0, value=id, options=options)
     return "SUCCESS"
 
@@ -159,46 +161,115 @@ def AnaIN():
 @app.route('/ButtonSet', methods=['GET'])
 def ButtonSet():
     
-    # configure bit 7 to be an input
-
+    # setup button
+    options = OptionFlags.DEFAULT
+    
     if 'id' in request.args:
         id = int(request.args['id'])
     else:
         return "Error detected"
-    
-    options = OptionFlags.DEFAULT
-    boardAddr = select_hat_device(HatIDs.MCC_152) 
-    board = mcc152(boardAddr)
-    board.dio_reset()
-    # configure bit 7 as an input for button press    
-    board.dio_config_write_bit(7, DIOConfigItem.DIRECTION, 0x01)
-    # enable bit7 as a latch input so we can tell if it changes
-    board.dio_config_write_bit(7, DIOConfigItem.INPUT_LATCH, 0x01)
-    # enable interrupts on chan 7
-    board.dio_config_write_bit(7, DIOConfigItem.INT_MASK, 0x00)
+         
+    #print("MCC 152 digital input interrupt example.")
+    #print("Enables interrupts on the inputs and displays their state when")
+    #print("they change.")
+    #print("   Functions / Methods demonstrated:")
+    #print("      mcc152.dio_reset")
+    #print("      mcc152.dio_config_write_port")
+    #print("      mcc152.dio_input_read_port")
+    #print("      mcc152.dio_int_status_read_port")
+    #print("      mcc152.info")
+    #print("      interrupt_callback_enable")
+    #print("      interrupt_callback_disable")
+    #print()
+
+    # Get an instance of the selected HAT device object.
+    address = select_hat_device(HatIDs.MCC_152)
+
+    #print("\nUsing address {}.\n".format(address))
+
+    global HAT  # pylint: disable=global-statement
+
+    HAT = mcc152(address)
+
+    # Reset the DIO to defaults (all channels input, pull-up resistors
+    # enabled).
+    HAT.dio_reset()
+
     # use bit 6 as status of button press and set to 0
-    board.dio_config_write_bit(6, DIOConfigItem.DIRECTION, 0x00)
-    board.dio_output_write_bit(6, 0)
-    # create hat callback for our function
+    HAT.dio_config_write_bit(6, DIOConfigItem.DIRECTION, 0)
+    HAT.dio_output_write_bit(6, 0)
+    
+    # set up Analog out 1 to supply 5VDC to button
+    HAT.a_out_write(channel=1, value=.5, options=options)
+        
+    # Read the initial input values so we don't trigger an interrupt when
+    # we enable them.
+    value = HAT.dio_input_read_port()
+
+    # Enable latched inputs so we know that a value changed even if it changes
+    # back to the original value before the interrupt callback.
+    HAT.dio_config_write_port(DIOConfigItem.INPUT_LATCH, 0xFF)
+
+    # Unmask (enable) interrupts on all channels.
+    HAT.dio_config_write_port(DIOConfigItem.INT_MASK, 0x00)
+
+    #print("Current input values are 0x{:02X}".format(value))
+    #print("Waiting for changes, enter any text to exit. ")
+
+    # Create a HAT callback object for our function
     callback = HatCallback(interrupt_callback)
 
-    return jsonify("Button Enabled")
+    # Enable the interrupt callback function. Provide a mutable value for
+    # user_data that counts the number of interrupt occurrences.
+
+    int_count = [0]
+    interrupt_callback_enable(callback, int_count)
+
+    # Wait for the user to enter anything, then exit.
+    if version_info.major > 2:
+        input("")
+    else:
+        raw_input("")
+
+    # Return the digital I/O to default settings.
+    HAT.dio_reset()
+
+    # Disable the interrupt callback.
+    interrupt_callback_disable()
+        
+    return jsonify("Button Complete")
 
 def interrupt_callback(user_data):
-    # called when DAQ HAT interrupt occurs
+    """
+    This function is called when a DAQ HAT interrupt occurs.
+    """
+    options = OptionFlags.DEFAULT
+    HAT.a_out_write(channel=1, value=1, options=options)
       
-    boardAddr = select_hat_device(HatIDs.MCC_152)
-    board = mcc152(boardAddr)
-    #board.dio_reset()
-    
-    # make sure MCC152 called 
-    status = board.dio_int_status_read_bit(7)
-    if status!= 0:
-        # button pressed
-        # read bit to clear interrupt and set bit 6 to indicate button was pressed
-        board.dio_config_write_bit(6, DIOConfigitem.DIRECTION, 0x00)
-        board.dio_output_write_bit(6, 1)
-    
+    print("Interrupt number {}".format(user_data[0]))
+    user_data[0] += 1
+
+    # An interrupt occurred, make sure this board was the source.
+    status = HAT.dio_int_status_read_port()
+
+    if status != 0:
+        HAT.a_out_write(channel=1, value=5, options=options)
+        # use bit 6 as status of button press and set to 0
+      
+        i = HAT.info().NUM_DIO_CHANNELS
+        print("Input channels that changed: ", end="")
+        for i in range(8):
+            if (status & (1 << i)) != 0:
+                print("{} ".format(i), end="")
+                
+        # Read the inputs to clear the active interrupt.
+        value = HAT.dio_input_read_port()
+        
+        HAT.dio_config_write_bit(6, DIOConfigItem.DIRECTION, 0)
+        HAT.dio_output_write_bit(6, 1)
+        
+        print("\nCurrent port value: 0x{:02X}".format(value))
+        
     return    
 
 @app.route('/BitSet', methods=['GET'])
@@ -219,20 +290,21 @@ def BitStatus():
         
     boardAddr = select_hat_device(HatIDs.MCC_152)
     board = mcc152(boardAddr)
-    #board.dio_reset()
-    
+       
     bitValue = board.dio_input_read_bit(6)
     
-    buttonStatus = [
-        {'bitStatus': id,
-        'value': bitValue,}
-         ] 
+    #buttonStatus = [
+    #    {'bitStatus': id,
+    #    'bitValue': bitValue}
+    #    ]  
     
-    return jsonify(buttonStatus)
+    return str(bitValue)
 
 @app.route('/ButtonClear', methods=['GET'])
 def ButtonClear():
 
+    options = OptionFlags.DEFAULT
+    
     if 'id' in request.args:
         id = int(request.args['id'])
     else:
@@ -241,6 +313,7 @@ def ButtonClear():
     boardAddr = select_hat_device(HatIDs.MCC_152)
     board = mcc152(boardAddr)
     board.dio_output_write_bit(6,0)
+    board.a_out_write(channel=1, value=0, options=options)
     
     buttonReset = [
         {'ButtonStatus': id,
@@ -248,9 +321,21 @@ def ButtonClear():
         ]
     
     return jsonify(buttonReset)
-          
+    
+@app.route('/ResetMcc152', methods=['GET'])
+def ResetMcc152():
+    
+    boardAddr = select_hat_device(HatIDs.MCC_152) 
+    board = mcc152(boardAddr)
+    board.dio_reset()
+    
+         
+    return jsonify("MCC152 RESET")
 
-            
-        
+
+
+
 if __name__ == '__main__':  
     app.run(host="10.111.7.130", port="5000")
+    
+    
