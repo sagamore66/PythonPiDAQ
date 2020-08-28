@@ -8,6 +8,7 @@ from daqhats import mcc134, mcc152, mcc118, HatIDs, HatError, TcTypes, hat_list,
     interrupt_callback_enable, HatCallback, interrupt_callback_disable
 from daqhats_utils import select_hat_device, tc_type_to_string, enum_mask_to_string
 from flask import Flask, request, jsonify
+from ctypes import cdll
 
 # Use a global variable for our board object so it is accessible from the
 # interrupt callback
@@ -26,6 +27,9 @@ def index():
     delay_between_reads = 1  # Seconds
     channels = (0, 1, 2, 3)
     
+    lib = cdll.LoadLibrary('/usr/local/lib/liblifepo4wered.so')
+   
+   
     for channel in channels:
         hat.tc_type_write(channel, tc_type)
        
@@ -33,25 +37,36 @@ def index():
     tempOne = str("{:.2f}".format((hat.t_in_read(1)*1.8)+32))
     tempTwo = str("{:.2f}".format((hat.t_in_read(2)*1.8)+32))
     tempThree = str("{:.2f}".format((hat.t_in_read(3)*1.8)+32))
+    vbat = str(lib.read_lifepo4wered(10))
     
     #tempzero = str("{:.2f}".format(tempzero))
     #tempOne = str(hat.t_in_read(1))
     #tempTwo = str(hat.t_in_read(2))
     #tempThree = str(hat.t_in_read(3))
         
-    temps = [
-        {'chan': 0,
-        'value': tempZero,},
-        {'chan': 1,
-        'value': tempOne,},
-        {'chan': 2,
-        'value': tempTwo,},
-        {'chan': 3,
-        'value': tempThree,} 
-        ]
+    temps = {
+        'tctemps':[
+        {'chan0': tempZero,},
+        {'chan1': tempOne,},
+        {'chan2': tempTwo,},
+        {'chan3': tempThree,}
+        ]}
    
     return jsonify(temps)
-            
+
+@app.route('/Battery', methods=['GET'])
+def Battery():
+     
+    lib = cdll.LoadLibrary('/usr/local/lib/liblifepo4wered.so')
+    
+    BattInfo = {
+        'battinfo':[
+        {'Iout': str(lib.read_lifepo4wered(12)),},
+        {'VBat':str(lib.read_lifepo4wered(10)),},
+        {'PiVin': str(lib.read_lifepo4wered(9)),}
+        ]}
+    
+    return jsonify(BattInfo)        
         
 @app.route('/DigOutWrite', methods=['GET'])
 def api_id():
@@ -336,6 +351,6 @@ def ResetMcc152():
 
 
 if __name__ == '__main__':  
-    app.run(host="10.111.7.130", port="5000")
+    app.run(host="10.111.7.92", port="5000")
     
     
