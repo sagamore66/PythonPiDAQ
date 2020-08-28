@@ -1,5 +1,5 @@
 # PythonPiDAQ
-Python on a Pi using MCC152, MCC118 and MCC134 hats and Flask to return JSON data
+Python on a Pi using MCC152, MCC118 and MCC134 hats and Flask to return JSON data.  
 Switched to PiZero WiFi and LiFePO4wered/Pi™ battery
 
 MCC152 requires IC2 be enabled on Pi
