@@ -19,40 +19,119 @@ app = Flask(__name__)
 app.config["DEBUG"] = False
 
 
-@app.route('/TCtemps')
+@app.route('/myaddress')
+def myaddress():
+
+    mylist  = hat_list(filter_by_id=HatIDs.MCC_134)
+    
+    address = mylist[0].address
+            
+    return str(address)
+
+@app.route('/TCtemps1')
 def index():
-    address = select_hat_device(HatIDs.MCC_134)
+    #address = select_hat_device(HatIDs.MCC_134)
+    mylist = hat_list(filter_by_id=HatIDs.MCC_134)
+    address = mylist[0].address
+    
+    
     hat = mcc134(address)
     tc_type = TcTypes.TYPE_K   # change this to the desired thermocouple type
     delay_between_reads = 1  # Seconds
     channels = (0, 1, 2, 3)
-    
+
     lib = cdll.LoadLibrary('/usr/local/lib/liblifepo4wered.so')
-   
-   
+
     for channel in channels:
         hat.tc_type_write(channel, tc_type)
-       
+
     tempZero = str("{:.2f}".format((hat.t_in_read(0)*1.8)+32))
     tempOne = str("{:.2f}".format((hat.t_in_read(1)*1.8)+32))
     tempTwo = str("{:.2f}".format((hat.t_in_read(2)*1.8)+32))
     tempThree = str("{:.2f}".format((hat.t_in_read(3)*1.8)+32))
+    temp1 = float(tempZero)
+    temp2 = float(tempOne)
+    temp3 = float(tempTwo)
+    temp4 = float(tempThree)
+
+    tempDiff12 = str("{:.2f}".format(temp1 - temp2))
+    tempDiff13 = str("{:.2f}".format(temp1 - temp3))
+    tempDiff23 = str("{:.2f}".format(temp2 - temp3))
+    tempDiff24 = str("{:.2f}".format(temp2 - temp4))
+    tempDiff14 = str("{:.2f}".format(temp1 - temp4))
+    tempDiff34 = str("{:.2f}".format(temp3 - temp4))
+
     vbat = str(lib.read_lifepo4wered(10))
-    
-    #tempzero = str("{:.2f}".format(tempzero))
-    #tempOne = str(hat.t_in_read(1))
-    #tempTwo = str(hat.t_in_read(2))
-    #tempThree = str(hat.t_in_read(3))
-        
+
     temps = {
-        'tctemps':[
-        {'chan0': tempZero,},
-        {'chan1': tempOne,},
-        {'chan2': tempTwo,},
-        {'chan3': tempThree,}
+        'tctemps_1':[
+        {'chan1': tempZero,},
+        {'chan2': tempOne,},
+        {'chan3': tempTwo,},
+        {'chan4': tempThree,},
+        {'tempDiff12': tempDiff12,},
+        {'tempDiff13': tempDiff13,},
+        {'tempDiff23': tempDiff23,},
+        {'tempDiff24': tempDiff24,},
+        {'tempDiff14': tempDiff14,},
+        {'tempDiff34': tempDiff34,},
+        {'vbat': vbat,}
         ]}
-   
+
     return jsonify(temps)
+
+@app.route('/TCtemps2')
+def index2():
+    #address = select_hat_device(HatIDs.MCC_134)
+    mylist = hat_list(filter_by_id=HatIDs.MCC_134)
+    address = mylist[1].address
+    
+    
+    hat = mcc134(address)
+    tc_type = TcTypes.TYPE_K   # change this to the desired thermocouple type
+    delay_between_reads = 1  # Seconds
+    channels = (0, 1, 2, 3)
+
+    lib = cdll.LoadLibrary('/usr/local/lib/liblifepo4wered.so')
+
+    for channel in channels:
+        hat.tc_type_write(channel, tc_type)
+
+    tempZero = str("{:.2f}".format((hat.t_in_read(0)*1.8)+32))
+    tempOne = str("{:.2f}".format((hat.t_in_read(1)*1.8)+32))
+    tempTwo = str("{:.2f}".format((hat.t_in_read(2)*1.8)+32))
+    tempThree = str("{:.2f}".format((hat.t_in_read(3)*1.8)+32))
+    temp1 = float(tempZero)
+    temp2 = float(tempOne)
+    temp3 = float(tempTwo)
+    temp4 = float(tempThree)
+
+    tempDiff12 = str("{:.2f}".format(temp1 - temp2))
+    tempDiff13 = str("{:.2f}".format(temp1 - temp3))
+    tempDiff23 = str("{:.2f}".format(temp2 - temp3))
+    tempDiff24 = str("{:.2f}".format(temp2 - temp4))
+    tempDiff14 = str("{:.2f}".format(temp1 - temp4))
+    tempDiff34 = str("{:.2f}".format(temp3 - temp4))
+
+    vbat = str(lib.read_lifepo4wered(10))
+
+    temps = {
+        'tctemps_2':[
+        {'chan1': tempZero,},
+        {'chan2': tempOne,},
+        {'chan3': tempTwo,},
+        {'chan4': tempThree,},
+        {'tempDiff12': tempDiff12,},
+        {'tempDiff13': tempDiff13,},
+        {'tempDiff23': tempDiff23,},
+        {'tempDiff24': tempDiff24,},
+        {'tempDiff14': tempDiff14,},
+        {'tempDiff34': tempDiff34,},
+        {'vbat': vbat,}
+        ]}
+
+    return jsonify(temps)
+
 
 @app.route('/Battery', methods=['GET'])
 def Battery():
@@ -351,6 +430,6 @@ def ResetMcc152():
 
 
 if __name__ == '__main__':  
-    app.run(host="10.111.7.92", port="5000")
+    app.run(host="10.111.7.131", port="5000")
     
     
