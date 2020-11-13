@@ -49,32 +49,32 @@ def index():
     tempOne = str("{:.2f}".format((hat.t_in_read(1)*1.8)+32))
     tempTwo = str("{:.2f}".format((hat.t_in_read(2)*1.8)+32))
     tempThree = str("{:.2f}".format((hat.t_in_read(3)*1.8)+32))
-    temp1 = float(tempZero)
-    temp2 = float(tempOne)
-    temp3 = float(tempTwo)
-    temp4 = float(tempThree)
+   # temp1 = float(tempZero)
+   # temp2 = float(tempOne)
+   # temp3 = float(tempTwo)
+   # temp4 = float(tempThree)
 
-    tempDiff12 = str("{:.2f}".format(temp1 - temp2))
-    tempDiff13 = str("{:.2f}".format(temp1 - temp3))
-    tempDiff23 = str("{:.2f}".format(temp2 - temp3))
-    tempDiff24 = str("{:.2f}".format(temp2 - temp4))
-    tempDiff14 = str("{:.2f}".format(temp1 - temp4))
-    tempDiff34 = str("{:.2f}".format(temp3 - temp4))
+   # tempDiff12 = str("{:.2f}".format(temp1 - temp2))
+   # tempDiff13 = str("{:.2f}".format(temp1 - temp3))
+   # tempDiff23 = str("{:.2f}".format(temp2 - temp3))
+   # tempDiff24 = str("{:.2f}".format(temp2 - temp4))
+   # tempDiff14 = str("{:.2f}".format(temp1 - temp4))
+   # tempDiff34 = str("{:.2f}".format(temp3 - temp4))
 
     vbat = str(lib.read_lifepo4wered(10))
 
     temps = {
-        'tctemps_1':[
-        {'chan1': tempZero,},
-        {'chan2': tempOne,},
-        {'chan3': tempTwo,},
-        {'chan4': tempThree,},
-        {'tempDiff12': tempDiff12,},
-        {'tempDiff13': tempDiff13,},
-        {'tempDiff23': tempDiff23,},
-        {'tempDiff24': tempDiff24,},
-        {'tempDiff14': tempDiff14,},
-        {'tempDiff34': tempDiff34,},
+        'TC_Temps_1':[
+        {'EAT': tempZero,},
+        {'LAT': tempOne,},
+        {'Clamp1': tempTwo,},
+        {'Clamp2': tempThree,},
+       # {'tempDiff12': tempDiff12,},
+       # {'tempDiff13': tempDiff13,},
+       # {'tempDiff23': tempDiff23,},
+       # {'tempDiff24': tempDiff24,},
+       # {'tempDiff14': tempDiff14,},
+       # {'tempDiff34': tempDiff34,},
         {'vbat': vbat,}
         ]}
 
@@ -101,32 +101,32 @@ def index2():
     tempOne = str("{:.2f}".format((hat.t_in_read(1)*1.8)+32))
     tempTwo = str("{:.2f}".format((hat.t_in_read(2)*1.8)+32))
     tempThree = str("{:.2f}".format((hat.t_in_read(3)*1.8)+32))
-    temp1 = float(tempZero)
-    temp2 = float(tempOne)
-    temp3 = float(tempTwo)
-    temp4 = float(tempThree)
+    #temp1 = float(tempZero)
+    #temp2 = float(tempOne)
+    #temp3 = float(tempTwo)
+    #temp4 = float(tempThree)
 
-    tempDiff12 = str("{:.2f}".format(temp1 - temp2))
-    tempDiff13 = str("{:.2f}".format(temp1 - temp3))
-    tempDiff23 = str("{:.2f}".format(temp2 - temp3))
-    tempDiff24 = str("{:.2f}".format(temp2 - temp4))
-    tempDiff14 = str("{:.2f}".format(temp1 - temp4))
-    tempDiff34 = str("{:.2f}".format(temp3 - temp4))
+    #tempDiff12 = str("{:.2f}".format(temp1 - temp2))
+    #tempDiff13 = str("{:.2f}".format(temp1 - temp3))
+    #tempDiff23 = str("{:.2f}".format(temp2 - temp3))
+    #tempDiff24 = str("{:.2f}".format(temp2 - temp4))
+    #tempDiff14 = str("{:.2f}".format(temp1 - temp4))
+    #tempDiff34 = str("{:.2f}".format(temp3 - temp4))
 
     vbat = str(lib.read_lifepo4wered(10))
 
     temps = {
-        'tctemps_2':[
-        {'chan1': tempZero,},
-        {'chan2': tempOne,},
-        {'chan3': tempTwo,},
-        {'chan4': tempThree,},
-        {'tempDiff12': tempDiff12,},
-        {'tempDiff13': tempDiff13,},
-        {'tempDiff23': tempDiff23,},
-        {'tempDiff24': tempDiff24,},
-        {'tempDiff14': tempDiff14,},
-        {'tempDiff34': tempDiff34,},
+        'TC_Temps_2':[
+        {'Clamp3': tempZero,},
+        {'Clamp4': tempOne,},
+        {'Clamp5': tempTwo,},
+        {'Clamp6': tempThree,},
+        #{'tempDiff12': tempDiff12,},
+        #{'tempDiff13': tempDiff13,},
+        #{'tempDiff23': tempDiff23,},
+        #{'tempDiff24': tempDiff24,},
+        #{'tempDiff14': tempDiff14,},
+        #{'tempDiff34': tempDiff34,},
         {'vbat': vbat,}
         ]}
 
